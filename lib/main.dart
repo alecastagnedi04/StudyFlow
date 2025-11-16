@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pagine/MainPage.dart';
+import 'pagine/login.dart'; // Importa la LoginPage
 
 void main() {
   runApp(const MyApp());
@@ -10,30 +10,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // 1. Contiene la pagina iniziale da mostrare
-      home: const Mainpage(), // è la classe di timer_page.dart
+    // Definisco il colore principale in un solo posto
+    const Color primaryOrange = Color.fromARGB(255, 216, 141, 71);
 
-      // 2. Contiene il TEMA (stile) di tutta l'app
+    return MaterialApp(
+      title: 'StudyFlow',
+      debugShowCheckedModeBanner: false, // Rimuove il banner di debug
       theme: ThemeData(
-        // D'ora in poi, ogni AppBar sarà viola
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color.fromARGB(255, 255, 186, 122),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), 
+        // Tema Material 3
+        useMaterial3: true,
+        // Colori principali dell'app
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primaryOrange, // Usiamo il tuo colore arancione come base
+          primary: const Color.fromARGB(255, 239, 138, 43),
+          secondary: const Color.fromARGB(255, 122, 190, 255), // Un azzurro/blu
         ),
-        // D'ora in poi, ogni pulsante sarà arancione
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-          ),
+        // Stile per i testi, usiamo un font semplice
+        textTheme: const TextTheme(
+          // Puoi personalizzare gli stili qui
         ),
       ),
-
-      // 3. Contiene il titolo (che vede il sistema operativo)
-      title: 'StudyFlow',
-
-      // 4. Contiene l'impostazione per togliere la striscia "Debug"
-      debugShowCheckedModeBanner: false,
+      // L'app inizia dalla schermata di Login
+      home: const LoginPage(),
     );
   }
 }
