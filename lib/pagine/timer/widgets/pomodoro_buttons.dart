@@ -2,29 +2,31 @@ import 'package:flutter/material.dart';
 
 class PomodoroButtons extends StatelessWidget {
   final bool attivo;
+  final Color coloreAttivo; // ✅ NUOVO: Colore dinamico passato dal genitore
   final VoidCallback onAvviaPausa;
   final VoidCallback onReset;
+  final VoidCallback onImpostazioni;
 
   const PomodoroButtons({
     super.key,
     required this.attivo,
+    required this.coloreAttivo, // ✅ Richiesto
     required this.onAvviaPausa,
     required this.onReset,
+    required this.onImpostazioni,
   });
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryOrange = Color.fromARGB(255, 255, 186, 122);
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Tasto Reset (piccolo a sinistra)
+        // Tasto Reset
         IconButton(
-          iconSize: 30,
+          iconSize: 28,
           onPressed: onReset,
           icon: const Icon(Icons.refresh),
-          color: Colors.grey,
+          color: Colors.grey.shade400,
           tooltip: 'Reset Timer',
         ),
         
@@ -34,13 +36,15 @@ class PomodoroButtons extends StatelessWidget {
         ElevatedButton(
           onPressed: onAvviaPausa,
           style: ElevatedButton.styleFrom(
-            backgroundColor: primaryOrange,
+            backgroundColor: coloreAttivo, // ✅ Usa il colore passato (Arancione o Verde)
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
-            elevation: 5,
+            elevation: 4,
+            // Animazione cambio colore fluida
+            animationDuration: const Duration(milliseconds: 300),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -50,17 +54,25 @@ class PomodoroButtons extends StatelessWidget {
               Text(
                 attivo ? "PAUSA" : "AVVIA",
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.1,
                 ),
               ),
             ],
           ),
         ),
         
-        // Spazio vuoto per bilanciare visivamente il tasto reset
-        const SizedBox(width: 50), 
+        const SizedBox(width: 20),
+
+        // Tasto Impostazioni
+        IconButton(
+          iconSize: 28,
+          onPressed: onImpostazioni,
+          icon: const Icon(Icons.settings_outlined),
+          color: Colors.grey,
+          tooltip: 'Impostazioni',
+        ),
       ],
     );
   }

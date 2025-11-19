@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; 
-// Assicurati che questi import puntino ai file corretti nel tuo progetto
 import 'pomodoro_buttons.dart';
 import 'pomodoro_shape.dart';
 import 'subj_list.dart';
-import 'bottoni_durata.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -15,10 +13,18 @@ class TimerPage extends StatefulWidget {
 
 class _TimerState extends State<TimerPage> {
   String? _materiaSelezionata;
-  int _minutiSelezionati = 25;
-  late int _durataInSecondi; 
-  late int _secondiRimanenti;
+  
+  final double _maxMinuti = 120.0;
+  
+  // STATO
+  int _minutiSelezionati = 25; 
+  int _minutiPausa = 5; 
+  
+  late int _durataInSecondi;   
+  late int _secondiRimanenti;  
+  
   bool _attivo = false;
+  bool _inPausa = false; 
   Timer? _timer;
 
   @override
@@ -34,17 +40,64 @@ class _TimerState extends State<TimerPage> {
     });
   }
 
-  void _selezionaDurata(int minuti) {
-    if (_attivo) return;
+  // --- GESTIONE TEMPO ---
 
+  void _cambiaDurata(int minuti) {
+    if (minuti < 1) minuti = 1;
+    if (_inPausa) {
+       _resetTimer();
+    }
     setState(() {
       _minutiSelezionati = minuti;
-      _durataInSecondi = minuti * 60;
-      _secondiRimanenti = _durataInSecondi;
+      if (!_attivo && !_inPausa) {
+        _durataInSecondi = minuti * 60;
+        _secondiRimanenti = _durataInSecondi;
+      }
     });
   }
 
-  void _avviaPausa() {
+  void _cambiaPausa(int minuti) {
+    setState(() {
+      _minutiPausa = minuti;
+    });
+  }
+
+  void _cambiaDurataDaSlider(double valoreSlider) {
+    _cambiaDurata(valoreSlider.toInt());
+  }
+
+  // --- LOGICA TIMER ---
+
+  void _avviaTimerSistema() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondiRimanenti > 0) {
+        setState(() {
+          _secondiRimanenti--;
+        });
+      } else {
+        _timer?.cancel();
+        _gestisciFineTimer();
+      }
+    });
+  }
+
+  void _gestisciFineTimer() {
+    if (!_inPausa && _minutiPausa > 0) {
+      // Passaggio a PAUSA
+      setState(() {
+        _inPausa = true; 
+        _durataInSecondi = _minutiPausa * 60; 
+        _secondiRimanenti = _durataInSecondi;
+        _attivo = true; 
+      });
+      _avviaTimerSistema(); 
+    } else {
+      // Fine PAUSA o fine sessione senza pausa
+      _resetTimer();
+    }
+  }
+
+  void _toggleAvviaPausa() {
     if (_attivo) {
       _timer?.cancel();
       setState(() {
@@ -54,25 +107,105 @@ class _TimerState extends State<TimerPage> {
       setState(() {
         _attivo = true;
       });
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_secondiRimanenti > 0) {
-          setState(() {
-            _secondiRimanenti--;
-          });
-        } else {
-          _timer?.cancel();
-          _resetTimer();
-        }
-      });
+      _avviaTimerSistema();
     }
   }
 
   void _resetTimer() {
     _timer?.cancel();
     setState(() {
-      _secondiRimanenti = _durataInSecondi;
       _attivo = false;
+      _inPausa = false; 
+      _durataInSecondi = _minutiSelezionati * 60;
+      _secondiRimanenti = _durataInSecondi;
     });
+  }
+
+  // --- UI SETTINGS ---
+  
+  void _mostraImpostazioni(BuildContext context) {
+    const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (BuildContext ctx) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 50, height: 5,
+                      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  
+                  const Text("⏱️ Durata Sessione", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 15),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [25, 60, 90, 120].map((durata) {
+                        final bool isSelected = _minutiSelezionati == durata;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ChoiceChip(
+                            label: Text('${durata} min'),
+                            selected: isSelected,
+                            selectedColor: primaryOrange,
+                            backgroundColor: Colors.grey.shade100,
+                            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
+                            onSelected: (_) {
+                              _cambiaDurata(durata);
+                              setModalState(() {}); 
+                              Navigator.pop(ctx); 
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  const Text("☕ Durata Pausa", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [0, 5, 10, 15].map((pausa) {
+                      final bool isSelected = _minutiPausa == pausa;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ChoiceChip(
+                          label: Text(pausa == 0 ? 'No' : '${pausa} min'),
+                          selected: isSelected,
+                          selectedColor: Colors.tealAccent.shade700,
+                          backgroundColor: Colors.grey.shade100,
+                          labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
+                          onSelected: (_) {
+                            _cambiaPausa(pausa);
+                            setModalState(() {});
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          }
+        );
+      },
+    );
   }
 
   @override
@@ -81,23 +214,39 @@ class _TimerState extends State<TimerPage> {
     super.dispose();
   }
 
-  String _formattaTempo(int secondi) {
-    final minuti = (secondi ~/ 60).toString().padLeft(2, '0');
-    final sec = (secondi % 60).toString().padLeft(2, '0');
-    return '$minuti:$sec';
-  }
-
-  // Calcola una percentuale da 0.0 a 1.0 per il cerchio
-  double _calcolaProgresso() {
-    if (_durataInSecondi == 0) return 0.0;
-    // Formula per far riempire/svuotare il cerchio
-    return (_durataInSecondi - _secondiRimanenti) / _durataInSecondi;
-  }
-
   @override
   Widget build(BuildContext context) {
     const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
-    
+    //const Color pauseGreen = Color.fromARGB(255, 100, 200, 180);
+    // Usiamo un Teal più acceso per la pausa, si legge meglio sul bianco
+    const Color pauseGreen = Color.fromARGB(255, 26, 188, 156);
+
+    // CALCOLO COLORI E STATI
+    double valoreSlider;
+    double maxValoreSlider;
+    String etichettaShape;
+    Color coloreCorrente; // Questo colore andrà sia allo Shape che al Bottone
+
+    if (_attivo || _inPausa) {
+      // Timer in corso
+      valoreSlider = _secondiRimanenti / 60.0;
+      maxValoreSlider = _durataInSecondi / 60.0; 
+      
+      if (_inPausa) {
+        etichettaShape = "PAUSA";
+        coloreCorrente = pauseGreen;
+      } else {
+        etichettaShape = "FOCUS";
+        coloreCorrente = primaryOrange;
+      }
+    } else {
+      // Timer fermo (Impostazione)
+      valoreSlider = _minutiSelezionati.toDouble();
+      maxValoreSlider = _maxMinuti;
+      etichettaShape = "IMPOSTA";
+      coloreCorrente = primaryOrange;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -105,45 +254,49 @@ class _TimerState extends State<TimerPage> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: primaryOrange,
+        foregroundColor: coloreCorrente, // Anche l'AppBar cambia colore!
         elevation: 1,
         centerTitle: true,
-        automaticallyImplyLeading: true,
       ),
       
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
           child: SizedBox(
-            // Altezza dinamica sicura
-            height: MediaQuery.of(context).size.height - AppBar().preferredSize.height - MediaQuery.of(context).padding.top - 20,
+            height: MediaQuery.of(context).size.height - AppBar().preferredSize.height - MediaQuery.of(context).padding.top - 40,
             
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 
-                const SizedBox(height: 30),
-                DurationButtonsBox(
-                    minutiSelezionati: _minutiSelezionati,
-                    onDurationSelected: _selezionaDurata,
-                ),
-                
-                const SizedBox(height: 50),
+                const SizedBox(height: 40),
 
-                // 2. Display del Timer
-                // Qui chiamiamo PomodoroShape con i parametri corretti per la versione "stabile"
                 PomodoroShape(
-                  tempoFormattato: _formattaTempo(_secondiRimanenti),
-                  progresso: _calcolaProgresso(),
+                  valoreCorrente: valoreSlider,
+                  maxValore: maxValoreSlider,
+                  interattivo: !_attivo && !_inPausa, 
+                  etichetta: etichettaShape,
+                  colore: coloreCorrente,
+                  onChanged: _cambiaDurataDaSlider,
                 ),
                 
+                const SizedBox(height: 10),
+
+                if (_minutiPausa > 0 && !_inPausa)
+                  Text(
+                    "Seguirà pausa di $_minutiPausa min",
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  ),
+
                 const SizedBox(height: 40),
 
                 PomodoroButtons(
                   attivo: _attivo,
-                  onAvviaPausa: _avviaPausa,
+                  coloreAttivo: coloreCorrente, // ✅ Passiamo il colore qui
+                  onAvviaPausa: _toggleAvviaPausa,
                   onReset: _resetTimer,
+                  onImpostazioni: () => _mostraImpostazioni(context),
                 ),
                 
                 const Spacer(), 

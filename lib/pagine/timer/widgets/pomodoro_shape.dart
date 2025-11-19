@@ -2,62 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
 class PomodoroShape extends StatelessWidget {
-  final String tempoFormattato;
-  final double progresso; // Valore da 0.0 a 1.0
+  final double valoreCorrente; 
+  final double maxValore;      
+  final bool interattivo;
+  final String etichetta;     // ✅ NUOVO: Testo centrale ("FOCUS", "PAUSA", "IMPOSTA")
+  final Color colore;         // ✅ NUOVO: Colore della barra (Arancione o Verde/Blu)
+  final Function(double) onChanged; 
 
   const PomodoroShape({
     super.key,
-    required this.tempoFormattato,
-    required this.progresso,
+    required this.valoreCorrente,
+    required this.maxValore,
+    required this.interattivo,
+    required this.etichetta,  // ✅ Richiesto
+    required this.colore,     // ✅ Richiesto
+    required this.onChanged,
   });
+
+  String _formattaSecondi(double minutiTotali) {
+    int secondiTotali = (minutiTotali * 60).round();
+    int min = secondiTotali ~/ 60;
+    int sec = secondiTotali % 60;
+    return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Colori del tema
-    const Color primaryOrange = Color.fromARGB(255, 255, 186, 122);
     const Color trackBeige = Color.fromARGB(255, 255, 236, 219);
 
-    // Configuriamo lo slider per essere SOLO visuale (non interattivo)
     return SizedBox(
       width: 280,
       height: 280,
-      // IgnorePointer blocca i tocchi, così non si può trascinare per sbaglio
-      child: IgnorePointer(
-        ignoring: true, 
+      child: AbsorbPointer(
+        absorbing: !interattivo, 
         child: SleekCircularSlider(
           min: 0,
-          max: 1,
-          initialValue: progresso, // Usa il progresso calcolato (0.0 - 1.0)
+          max: maxValore,
+          initialValue: valoreCorrente,
           
+          onChange: (double value) {
+            if (interattivo) {
+              onChanged(value);
+            }
+          },
+
           appearance: CircularSliderAppearance(
             size: 280,
-            startAngle: 270, // Inizia in alto
+            startAngle: 270,
             angleRange: 360,
             customWidths: CustomSliderWidths(
               trackWidth: 15,
               progressBarWidth: 15,
-              handlerSize: 0, // Nasconde il pallino (non serve se non è interattivo)
+              handlerSize: interattivo ? 20 : 0, 
               shadowWidth: 0,
             ),
             customColors: CustomSliderColors(
               trackColor: trackBeige,
-              progressBarColor: primaryOrange,
+              progressBarColor: colore, // ✅ Usa il colore passato
+              dotColor: colore,         // ✅ Usa il colore passato
               hideShadow: true,
-              dotColor: Colors.transparent,
             ),
             infoProperties: InfoProperties(
-              mainLabelStyle: const TextStyle(color: Colors.transparent), // Nasconde testo default
-            )
+              mainLabelStyle: const TextStyle(color: Colors.transparent),
+            ),
           ),
           
-          // Il nostro testo centrale personalizzato
           innerWidget: (double value) {
+            // LOGICA TESTO:
+            // Se interattivo (stop/imposta) -> mostra minuti interi
+            // Se non interattivo (timer corre) -> mostra mm:ss
+            String testoTempo;
+            if (interattivo) {
+               testoTempo = "${value.toInt()}m";
+            } else {
+               testoTempo = _formattaSecondi(value);
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    tempoFormattato,
+                    testoTempo,
                     style: const TextStyle(
                       fontSize: 60, 
                       fontWeight: FontWeight.bold,
@@ -66,12 +92,12 @@ class PomodoroShape extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    "FOCUS",
+                  Text(
+                    etichetta, // ✅ Testo dinamico (PAUSA / FOCUS / IMPOSTA)
                     style: TextStyle(
                       fontSize: 14, 
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 2.0
                     ),
                   )
