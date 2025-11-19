@@ -5,8 +5,8 @@ class PomodoroShape extends StatelessWidget {
   final double valoreCorrente; 
   final double maxValore;      
   final bool interattivo;
-  final String etichetta;     // ✅ NUOVO: Testo centrale ("FOCUS", "PAUSA", "IMPOSTA")
-  final Color colore;         // ✅ NUOVO: Colore della barra (Arancione o Verde/Blu)
+  final String etichetta;     
+  final Color colore;         
   final Function(double) onChanged; 
 
   const PomodoroShape({
@@ -14,8 +14,8 @@ class PomodoroShape extends StatelessWidget {
     required this.valoreCorrente,
     required this.maxValore,
     required this.interattivo,
-    required this.etichetta,  // ✅ Richiesto
-    required this.colore,     // ✅ Richiesto
+    required this.etichetta,  
+    required this.colore,     
     required this.onChanged,
   });
 
@@ -58,8 +58,8 @@ class PomodoroShape extends StatelessWidget {
             ),
             customColors: CustomSliderColors(
               trackColor: trackBeige,
-              progressBarColor: colore, // ✅ Usa il colore passato
-              dotColor: colore,         // ✅ Usa il colore passato
+              progressBarColor: colore, 
+              dotColor: colore,         
               hideShadow: true,
             ),
             infoProperties: InfoProperties(
@@ -68,9 +68,8 @@ class PomodoroShape extends StatelessWidget {
           ),
           
           innerWidget: (double value) {
-            // LOGICA TESTO:
             // Se interattivo (stop/imposta) -> mostra minuti interi
-            // Se non interattivo (timer corre) -> mostra mm:ss
+            // Se non interattivo (timer avviato) -> mostra mm:ss
             String testoTempo;
             if (interattivo) {
                testoTempo = "${value.toInt()}m";
@@ -93,7 +92,7 @@ class PomodoroShape extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    etichetta, // ✅ Testo dinamico (PAUSA / FOCUS / IMPOSTA)
+                    etichetta, 
                     style: TextStyle(
                       fontSize: 14, 
                       color: Colors.grey.shade600,

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
-// Definizione del widget StatelessWidget
+//  QUESTO FILE NON SERVE PIU', E' UNA LOGICA OBSOLETA
+
+
+
+
 class DurationButtonsBox extends StatelessWidget {
-  // 1. Variabili di stato necessarie dal genitore
+  // 1. Variabili di stato necessarie 
   final int minutiSelezionati;
   final void Function(int) onDurationSelected;
   
-  // 2. Colore per l'UI
+
   static const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
 
   const DurationButtonsBox({
@@ -15,12 +19,12 @@ class DurationButtonsBox extends StatelessWidget {
     required this.onDurationSelected,
   });
 
-  // Funzione helper per costruire il singolo pulsante
+
   Widget _buildDurationButton(int minuti) {
     final bool isSelected = minutiSelezionati == minuti;
 
     return ElevatedButton(
-      onPressed: () => onDurationSelected(minuti), // Chiama il callback del genitore
+      onPressed: () => onDurationSelected(minuti),
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected ? primaryOrange : Colors.grey.shade200, 
         foregroundColor: isSelected ? Colors.white : Colors.black87,
@@ -35,7 +39,7 @@ class DurationButtonsBox extends StatelessWidget {
     );
   }
   
-  // Funzione helper per costruire la Box
+
   @override
   Widget build(BuildContext context) {
     return Container(

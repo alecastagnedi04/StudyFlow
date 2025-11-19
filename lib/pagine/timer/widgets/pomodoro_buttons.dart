@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class PomodoroButtons extends StatelessWidget {
   final bool attivo;
-  final Color coloreAttivo; // ✅ NUOVO: Colore dinamico passato dal genitore
+  final Color coloreAttivo; 
   final VoidCallback onAvviaPausa;
   final VoidCallback onReset;
   final VoidCallback onImpostazioni;
@@ -10,7 +10,7 @@ class PomodoroButtons extends StatelessWidget {
   const PomodoroButtons({
     super.key,
     required this.attivo,
-    required this.coloreAttivo, // ✅ Richiesto
+    required this.coloreAttivo, 
     required this.onAvviaPausa,
     required this.onReset,
     required this.onImpostazioni,
@@ -32,18 +32,18 @@ class PomodoroButtons extends StatelessWidget {
         
         const SizedBox(width: 20),
 
-        // Tasto Principale (Play/Pausa)
+        // Tasto Principale (avvio/Pausa)
         ElevatedButton(
           onPressed: onAvviaPausa,
           style: ElevatedButton.styleFrom(
-            backgroundColor: coloreAttivo, // ✅ Usa il colore passato (Arancione o Verde)
+            backgroundColor: coloreAttivo, 
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
             elevation: 4,
-            // Animazione cambio colore fluida
+            // Animazione cambio colore 
             animationDuration: const Duration(milliseconds: 300),
           ),
           child: Row(

@@ -99,46 +99,46 @@ class _MainPageState extends State<MainPage> {
 
       body: _isHomeActive ? const HomePage() : _pages[_currentIndex],
       
-      // --- FAB (IL BOTTONE GALLEGGIANTE CENTRALE) ---
+      // bottone home separato dalla bottomAppBar
       floatingActionButton: FloatingActionButton(
         onPressed: _goToHome,
         backgroundColor: primaryOrange,
         foregroundColor: Colors.white,
-        shape: const CircleBorder(), // Cerchio perfetto
-        elevation: 4, // Ombra leggera per staccarlo
+        shape: const CircleBorder(), 
+        elevation: 4, // Ombra 
         child: const Icon(Icons.home, size: 28),
       ),
       
-      // Questa proprietà "incastra" il bottone nella barra sotto
+      // il bottone è inserito nell appBar
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
 
       //NON TOCCARE CHE SI ROMPE TUTTO
 
-      // --- BOTTOM BAR CON BUCO (NOTCH) ---
+      // spazio per il bottone home separato 
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(), // Crea il taglio circolare
-        notchMargin: 8.0, // Distanza tra il bottone e il taglio
-        color: const Color(0xFFFFF3E0), // Colore sfondo barra (Beige chiaro)
+        shape: const CircularNotchedRectangle(), 
+        notchMargin: 8.0, 
+        color: const Color(0xFFFFF3E0), // Colore sfondo barra 
         elevation: 10, // Ombra della barra
-        padding: EdgeInsets.zero, // FIX OVERFLOW: Rimuove padding extra indesiderato
-        height: 65, // Altezza fissa per stabilità
-        clipBehavior: Clip.antiAlias, // Bordi puliti
+        padding: EdgeInsets.zero,//Rimuove padding che crea overflow 
+        height: 65, // Altezza fissa 
+        clipBehavior: Clip.antiAlias, // Bordi
         
         child: BottomNavigationBar(
           backgroundColor: Colors.transparent, // Trasparente perché il colore lo da BottomAppBar
           elevation: 0, // 0 perché l'ombra la da BottomAppBar
-          type: BottomNavigationBarType.fixed, // Necessario per 5 item
+          type: BottomNavigationBarType.fixed, // Necessario per 5 pagine
           
-          // Se siamo in Home, evidenziamo il buco centrale (o nulla), altrimenti l'icona giusta
+          // evidenzia selezione
           currentIndex: _isHomeActive ? 2 : _getVisualIndex(),
           
-          // Se siamo in Home, rendiamo "trasparente" l'evidenziazione così sembra che nulla sia selezionato
+          // in home non evidenziare
           selectedItemColor: _isHomeActive ? Colors.transparent : primaryOrange,
           unselectedItemColor: Colors.grey,
           
           showSelectedLabels: true, 
-          showUnselectedLabels: false, // Nascondiamo le label non selezionate per pulizia
+          showUnselectedLabels: false, // Nascondiamo le etichette quando l'icona non è selezionata
           
           onTap: _setPage,
           
@@ -147,7 +147,7 @@ class _MainPageState extends State<MainPage> {
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Calendario'),
             BottomNavigationBarItem(icon: Icon(Icons.insights), label: 'Stats'),
 
-            // CENTRO (SPAZIO VUOTO INVISIBILE PER IL FAB)
+            // CENTRO: home
             BottomNavigationBarItem(
               icon: Icon(Icons.circle, color: Colors.transparent), // Icona fantasma
               label: '', 

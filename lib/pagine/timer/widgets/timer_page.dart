@@ -40,7 +40,7 @@ class _TimerState extends State<TimerPage> {
     });
   }
 
-  // --- GESTIONE TEMPO ---
+  // --- GESTIONE DEL TEMPO ---
 
   void _cambiaDurata(int minuti) {
     if (minuti < 1) minuti = 1;
@@ -66,7 +66,7 @@ class _TimerState extends State<TimerPage> {
     _cambiaDurata(valoreSlider.toInt());
   }
 
-  // --- LOGICA TIMER ---
+  // --- LOGICA DEL TIMER ---
 
   void _avviaTimerSistema() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -83,7 +83,7 @@ class _TimerState extends State<TimerPage> {
 
   void _gestisciFineTimer() {
     if (!_inPausa && _minutiPausa > 0) {
-      // Passaggio a PAUSA
+      // PAUSA
       setState(() {
         _inPausa = true; 
         _durataInSecondi = _minutiPausa * 60; 
@@ -92,12 +92,12 @@ class _TimerState extends State<TimerPage> {
       });
       _avviaTimerSistema(); 
     } else {
-      // Fine PAUSA o fine sessione senza pausa
+      // Fine pausa o fine sessione senza pausa
       _resetTimer();
     }
   }
 
-  void _toggleAvviaPausa() {
+  void _avviaPausa() {
     if (_attivo) {
       _timer?.cancel();
       setState(() {
@@ -121,7 +121,7 @@ class _TimerState extends State<TimerPage> {
     });
   }
 
-  // --- UI SETTINGS ---
+  // pagina a scomparsa impostazioni timer (preimpostazioni timer e pausa)
   
   void _mostraImpostazioni(BuildContext context) {
     const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
@@ -217,11 +217,9 @@ class _TimerState extends State<TimerPage> {
   @override
   Widget build(BuildContext context) {
     const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
-    //const Color pauseGreen = Color.fromARGB(255, 100, 200, 180);
-    // Usiamo un Teal più acceso per la pausa, si legge meglio sul bianco
     const Color pauseGreen = Color.fromARGB(255, 26, 188, 156);
 
-    // CALCOLO COLORI E STATI
+    
     double valoreSlider;
     double maxValoreSlider;
     String etichettaShape;
@@ -232,6 +230,7 @@ class _TimerState extends State<TimerPage> {
       valoreSlider = _secondiRimanenti / 60.0;
       maxValoreSlider = _durataInSecondi / 60.0; 
       
+      // gestione colore timer/pausa
       if (_inPausa) {
         etichettaShape = "PAUSA";
         coloreCorrente = pauseGreen;
@@ -240,7 +239,7 @@ class _TimerState extends State<TimerPage> {
         coloreCorrente = primaryOrange;
       }
     } else {
-      // Timer fermo (Impostazione)
+      //  quando il timer è fermo si può impostare
       valoreSlider = _minutiSelezionati.toDouble();
       maxValoreSlider = _maxMinuti;
       etichettaShape = "IMPOSTA";
@@ -254,11 +253,12 @@ class _TimerState extends State<TimerPage> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: coloreCorrente, // Anche l'AppBar cambia colore!
+        foregroundColor: coloreCorrente, // Anche la scritta "timer pomodoro" (AppBar) cambia colore
         elevation: 1,
         centerTitle: true,
       ),
       
+      //visualizzazione timer
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
@@ -271,7 +271,7 @@ class _TimerState extends State<TimerPage> {
               children: <Widget>[
                 
                 const SizedBox(height: 40),
-
+                //timer e valori
                 PomodoroShape(
                   valoreCorrente: valoreSlider,
                   maxValore: maxValoreSlider,
@@ -282,10 +282,10 @@ class _TimerState extends State<TimerPage> {
                 ),
                 
                 const SizedBox(height: 10),
-
+                //informazioni
                 if (_minutiPausa > 0 && !_inPausa)
                   Text(
-                    "Seguirà pausa di $_minutiPausa min",
+                    "A seguire: pausa di $_minutiPausa min",
                     style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                   ),
 
@@ -293,14 +293,14 @@ class _TimerState extends State<TimerPage> {
 
                 PomodoroButtons(
                   attivo: _attivo,
-                  coloreAttivo: coloreCorrente, // ✅ Passiamo il colore qui
-                  onAvviaPausa: _toggleAvviaPausa,
+                  coloreAttivo: coloreCorrente,
+                  onAvviaPausa: _avviaPausa,
                   onReset: _resetTimer,
                   onImpostazioni: () => _mostraImpostazioni(context),
                 ),
                 
                 const Spacer(), 
-
+                //gestione materie (da migliorare)
                 SubjectList(
                     selectedSubject: _materiaSelezionata, 
                     onSubjectSelected: _selezioneMateria,

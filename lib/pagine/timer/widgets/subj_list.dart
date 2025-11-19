@@ -21,7 +21,7 @@ class _SubjectListState extends State<SubjectList> {
   static const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
   
   // STATO INTERNO
-  List<String> _materie = ['Matematica', 'Storia', 'Inglese'];
+  List<String> _materie = ['Matematica', 'Storia', 'Inglese'];  // lista base di materie per la scelta
   Map<String, Color> _coloriMateria = {}; // Mappa materia -> Colore unico
 
   final Random _random = Random();
@@ -35,7 +35,7 @@ class _SubjectListState extends State<SubjectList> {
     }
   }
 
-  // --- LOGICA INTERNA ---
+  // logica colore randomico selezione
 
   void _assegnaColore(String materia) {
     Color newColor;
@@ -59,11 +59,11 @@ class _SubjectListState extends State<SubjectList> {
   }
 
 
-  // --- FUNZIONI UI ---
 
-  // ✅ MODIFICA 2: Usa i parametri del widget e la logica colore/bordo
+
+  // colore/bordo
   Widget _buildMateriaButton(String materia) {
-    // Usa lo stato di selezione che arriva dal padre
+
     final bool isSelected = widget.selectedSubject == materia; 
     final Color materiaColor = _coloriMateria[materia] ?? Colors.blueGrey;
     
@@ -84,7 +84,7 @@ class _SubjectListState extends State<SubjectList> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        // Bordo dinamico: usa il colore randomico della materia quando selezionata
+        // il bordo usa il colore randomico della materia quando selezionata
         side: BorderSide(
           color: isSelected ? materiaColor : Colors.grey.shade300, 
           width: isSelected ? 2.0 : 1.0, 
@@ -116,6 +116,7 @@ class _SubjectListState extends State<SubjectList> {
   void _showAddMateriaDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
 
+//aggiunta materie nuove
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -181,8 +182,7 @@ class _SubjectListState extends State<SubjectList> {
             children: [
               _buildAddButton(context), 
               
-              // Mappa la lista _materie in pulsanti
-              // NOTA: Il colore non è più necessario, viene recuperato in _buildMateriaButton
+              
               ..._materie.map((materia) => _buildMateriaButton(materia)).toList(),
             ],
           ),
