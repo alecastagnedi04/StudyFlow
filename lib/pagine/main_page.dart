@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Assicurati che questi import siano corretti nel tuo progetto
 import 'home/home_page.dart';
 import 'calendario/calendario_page.dart';
 import 'stats/widgets/stats_page.dart';
@@ -17,84 +18,75 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   static const Color primaryOrange = Color.fromARGB(255, 255, 186, 122); 
   
-  // Iniziamo con Home attiva (FAB)
-  int _currentIndex = 0; // Indice della pagina laterale attiva
-  bool _isHomeActive = true; // Traccia se la HomePage (FAB) è attiva
+  // Indice LOGICO della pagina (0=Cal, 1=Stats, 2=Umore, 3=Note)
+  int _currentIndex = 0; 
+  bool _isHomeActive = true; 
 
-  // LISTA PAGINE: Solo le pagine laterali (4 elementi)
   final List<Widget> _pages = const [
-    CalendarioPage(),  // Pagina 0 (Left slot 0)
-    StatsPage(),       // Pagina 1 (Left slot 1)
-    MoodPage(),        // Pagina 2 (Right slot 3)
-    NotesPage(),       // Pagina 3 (Right slot 4)
+    CalendarioPage(),  
+    StatsPage(),       
+    MoodPage(),        
+    NotesPage(),       
   ];
   
-  // Funzione per aprire la ProfilePage
   void _apriProfilo() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (ctx) => const ProfilePage()),
     );
   }
 
-  // LOGICA DI NAVIGAZIONE TAB LATERALE
-  void _setPage(int newTapIndex) {
-    if (newTapIndex == 2) return; // Ignora lo slot centrale (FAB)
+  // Gestisce il click sulla barra di navigazione
+  void _setPage(int visualIndex) {
+    // Se l'utente clicca il buco centrale (indice 2), non facciamo nulla
+    if (visualIndex == 2) return;
 
-    // Mappa l'indice cliccato nell'indice della lista _pages
-    final int newPageIndex = newTapIndex > 2 ? newTapIndex - 1 : newTapIndex;
+    // Mappiamo l'indice VISIVO (0,1,3,4) all'indice LOGICO delle pagine (0,1,2,3)
+    // Se clicco a destra del buco (>2), sottraggo 1 per "saltare" il buco
+    final int logicalIndex = visualIndex > 2 ? visualIndex - 1 : visualIndex;
 
     setState(() {
-      _currentIndex = newPageIndex; 
-      _isHomeActive = false; // La Home non è più attiva
+      _currentIndex = logicalIndex; 
+      _isHomeActive = false; 
     });
   }
 
-  // LOGICA DI NAVIGAZIONE HOME CENTRALE
   void _goToHome() {
     setState(() {
       _isHomeActive = true;
     });
   }
 
-  // Funzione per ottenere il titolo della pagina corrente
   String _getAppBarTitle() {
     if (_isHomeActive) return 'Home';
-    
     switch (_currentIndex) {
-      case 0:
-        return 'Calendario';
-      case 1:
-        return 'Statistiche';
-      case 2:
-        return 'Umore';
-      case 3:
-        return 'Note';
-      default:
-        return 'StudyFlow';
+      case 0: return 'Calendario';
+      case 1: return 'Statistiche';
+      case 2: return 'Umore';
+      case 3: return 'Note';
+      default: return 'StudyFlow';
     }
   }
-  
 
-
-  // FUNZIONE CHE RESTITUISCE IL WIDGET CORRENTE (Home o Pagina Laterale)
-  Widget _getCurrentPage() {
-    // Il padding compensa lo spazio occupato dal BottomAppBar
-      return _isHomeActive ? const HomePage() : _pages[_currentIndex];
-    
+  // Converte l'indice LOGICO (0-3) in indice VISIVO (0-4 con buco al 2) per evidenziare l'icona giusta
+  int _getVisualIndex() {
+    if (_currentIndex >= 2) return _currentIndex + 1;
+    return _currentIndex;
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Fondamentale per evitare che la tastiera rompa il layout della barra
+      resizeToAvoidBottomInset: false,
+      // Permette al corpo di estendersi dietro al FAB per un look più moderno
+      extendBody: true, 
       
-      // APPBAR TRASPARENTE con accesso al Profilo
       appBar: AppBar(
         title: Text(_getAppBarTitle(), style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 1, 
-        backgroundColor: Colors.transparent,
-        foregroundColor: primaryOrange,
+        backgroundColor: Colors.transparent, // Trasparente per mostrare sfondo body
+        foregroundColor: Colors.orange,
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
@@ -105,47 +97,65 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
 
-      body: _getCurrentPage(),
+      body: _isHomeActive ? const HomePage() : _pages[_currentIndex],
       
-      // FLOATING ACTION BUTTON (il pulsante Home centrale)
+      // --- FAB (IL BOTTONE GALLEGGIANTE CENTRALE) ---
       floatingActionButton: FloatingActionButton(
         onPressed: _goToHome,
         backgroundColor: primaryOrange,
         foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        elevation: 8,
-        child: const Icon(Icons.home, size: 20),
+        shape: const CircleBorder(), // Cerchio perfetto
+        elevation: 4, // Ombra leggera per staccarlo
+        child: const Icon(Icons.home, size: 28),
       ),
       
+      // Questa proprietà "incastra" il bottone nella barra sotto
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(), 
-        notchMargin: 6.0,
-        child: BottomNavigationBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          
-          // L'indice selezionato è -1 se Home è attiva, altrimenti è l'indice della pagina laterale
-          currentIndex: _isHomeActive ? 0 : _currentIndex,
-          
-          showSelectedLabels: false, 
-          showUnselectedLabels: false,
-          selectedItemColor: _isHomeActive ? Colors.grey : primaryOrange,
-          unselectedItemColor: Colors.grey,
-          onTap: _setPage,
-          items: const [
-            // Gruppo Sinistro
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Calendario'), // Index 0 -> Pagina 0
-            BottomNavigationBarItem(icon: Icon(Icons.insights), label: 'Statistiche'),   // Index 1 -> Pagina 1
 
-            // Slot Vuoto (Centro)
-            BottomNavigationBarItem(icon: Icon(null), label: ''), // Icona nulla
+      //NON TOCCARE CHE SI ROMPE TUTTO
+
+      // --- BOTTOM BAR CON BUCO (NOTCH) ---
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(), // Crea il taglio circolare
+        notchMargin: 8.0, // Distanza tra il bottone e il taglio
+        color: const Color(0xFFFFF3E0), // Colore sfondo barra (Beige chiaro)
+        elevation: 10, // Ombra della barra
+        padding: EdgeInsets.zero, // FIX OVERFLOW: Rimuove padding extra indesiderato
+        height: 65, // Altezza fissa per stabilità
+        clipBehavior: Clip.antiAlias, // Bordi puliti
+        
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent, // Trasparente perché il colore lo da BottomAppBar
+          elevation: 0, // 0 perché l'ombra la da BottomAppBar
+          type: BottomNavigationBarType.fixed, // Necessario per 5 item
+          
+          // Se siamo in Home, evidenziamo il buco centrale (o nulla), altrimenti l'icona giusta
+          currentIndex: _isHomeActive ? 2 : _getVisualIndex(),
+          
+          // Se siamo in Home, rendiamo "trasparente" l'evidenziazione così sembra che nulla sia selezionato
+          selectedItemColor: _isHomeActive ? Colors.transparent : primaryOrange,
+          unselectedItemColor: Colors.grey,
+          
+          showSelectedLabels: true, 
+          showUnselectedLabels: false, // Nascondiamo le label non selezionate per pulizia
+          
+          onTap: _setPage,
+          
+          items: const [
+            // SINISTRA
+            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Calendario'),
+            BottomNavigationBarItem(icon: Icon(Icons.insights), label: 'Stats'),
+
+            // CENTRO (SPAZIO VUOTO INVISIBILE PER IL FAB)
+            BottomNavigationBarItem(
+              icon: Icon(Icons.circle, color: Colors.transparent), // Icona fantasma
+              label: '', 
+            ),
             
-            // Gruppo Destro
-            BottomNavigationBarItem(icon: Icon(Icons.mood), label: 'Umore'),  // Index 3 -> Pagina 2
-            BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Note'),  // Index 4 -> Pagina 3
+            // DESTRA
+            BottomNavigationBarItem(icon: Icon(Icons.mood), label: 'Umore'),
+            BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Note'),
           ],
         ),
       ),

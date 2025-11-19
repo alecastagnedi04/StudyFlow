@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
-// Questo widget "stupido" sa solo come disegnare
-// i pulsanti Avvia/Pausa e Reset.
 class PomodoroButtons extends StatelessWidget {
   final bool attivo;
-  final void Function() onAvviaPausa;
-  final void Function() onReset;
+  final VoidCallback onAvviaPausa;
+  final VoidCallback onReset;
 
   const PomodoroButtons({
     super.key,
@@ -16,36 +14,53 @@ class PomodoroButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Size buttonSize = Size(120, 50);
-    const TextStyle buttonTextStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    const Color primaryOrange = Color.fromARGB(255, 255, 186, 122);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Pulsante AVVIA/PAUSA
-        ElevatedButton(
-          
-          onPressed: onAvviaPausa, // Chiama la funzione passata dal "Cervello"
-          style: ElevatedButton.styleFrom(
-            minimumSize: buttonSize,
-            backgroundColor: attivo ? const Color.fromARGB(255, 255, 186, 122):const Color.fromARGB(255, 249, 159, 75) ,
-            foregroundColor: Colors.white,
-          ),
-          child: Text(attivo ? 'Pausa' : 'Avvia', 
-            style: buttonTextStyle,
-          ),
+        // Tasto Reset (piccolo a sinistra)
+        IconButton(
+          iconSize: 30,
+          onPressed: onReset,
+          icon: const Icon(Icons.refresh),
+          color: Colors.grey,
+          tooltip: 'Reset Timer',
         ),
-        const SizedBox(width: 30),
         
-        // Pulsante RESET
+        const SizedBox(width: 20),
+
+        // Tasto Principale (Play/Pausa)
         ElevatedButton(
-          onPressed: onReset, // Chiama la funzione passata dal "Cervello"
+          onPressed: onAvviaPausa,
           style: ElevatedButton.styleFrom(
-            minimumSize: buttonSize,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: primaryOrange,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            elevation: 5,
           ),
-          child: const Text('Reset',style: buttonTextStyle,),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(attivo ? Icons.pause : Icons.play_arrow, size: 28),
+              const SizedBox(width: 8),
+              Text(
+                attivo ? "PAUSA" : "AVVIA",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
         ),
+        
+        // Spazio vuoto per bilanciare visivamente il tasto reset
+        const SizedBox(width: 50), 
       ],
     );
   }
